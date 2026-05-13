@@ -6,9 +6,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-
 # ============================================
 # PAGE CONFIG
 # ============================================
@@ -35,8 +32,6 @@ st.markdown("""
     padding-top: 2rem;
 }
 
-/* HEADINGS */
-
 h1 {
     color: #0F172A !important;
     font-weight: 800;
@@ -46,13 +41,9 @@ h2, h3 {
     color: #1E293B !important;
 }
 
-/* NORMAL TEXT */
-
 p, label, div {
     color: #334155;
 }
-
-/* METRIC CARDS */
 
 [data-testid="metric-container"] {
     background: white;
@@ -62,14 +53,10 @@ p, label, div {
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-/* DATAFRAME */
-
 .stDataFrame {
     background-color: white;
     border-radius: 12px;
 }
-
-/* BUTTON */
 
 div.stDownloadButton > button {
     background-color: #2563EB;
@@ -78,8 +65,6 @@ div.stDownloadButton > button {
     border: none;
     padding: 10px 20px;
 }
-
-/* HEADER BOX */
 
 .upload-box {
     background: linear-gradient(
@@ -97,8 +82,6 @@ div.stDownloadButton > button {
     margin-bottom: 20px;
 }
 
-/* HEADER TEXT */
-
 .upload-box h1 {
     color: #0F172A !important;
 }
@@ -108,8 +91,6 @@ div.stDownloadButton > button {
     font-size: 18px;
     line-height: 1.7;
 }
-
-/* SIDEBAR */
 
 section[data-testid="stSidebar"] {
     background-color: #EFF6FF;
@@ -127,21 +108,21 @@ st.markdown("""
 
 <div class="upload-box">
 
-<h1>💰 Group Term Life Insurance Premium Calculator</h1>
+<h1>💰 Group Insurance Premium Calculator</h1>
 
 <p>
 
-Upload insurance Excel files and automatically calculate:
+Upload any insurance/member Excel file and calculate:
 
 <br><br>
 
-✅ Premium  
+✅ Premium Excl GST  
 <br>
-✅ GST  
+✅ GST Amount  
 <br>
 ✅ Total Premium  
 <br>
-✅ ML Risk Prediction  
+✅ Portfolio Summary  
 
 </p>
 
@@ -162,7 +143,7 @@ GST_RATE = 0.18
 # ============================================
 
 uploaded_file = st.file_uploader(
-    "📂 Upload Insurance Excel File",
+    "📂 Upload Excel File",
     type=["xlsx"]
 )
 
@@ -175,16 +156,15 @@ if uploaded_file is not None:
     try:
 
         # ============================================
-        # READ FILE
+        # READ EXCEL
         # ============================================
 
         df = pd.read_excel(uploaded_file)
 
-        # CLEAN COLUMN NAMES
         df.columns = df.columns.str.strip()
 
         # ============================================
-        # SHOW RAW DATA
+        # SHOW DATA
         # ============================================
 
         with st.expander("📄 View Uploaded Data"):
@@ -192,311 +172,192 @@ if uploaded_file is not None:
             st.dataframe(df.head())
 
         # ============================================
-        # COLUMN ALIAS MAPPING
+        # SHOW COLUMNS
         # ============================================
 
-        COLUMN_ALIASES = {
+        st.subheader("📋 Uploaded Columns")
 
-            'Name': [
+        st.write(df.columns.tolist())
 
-    'name',
-
-    'customer name',
-
-    'member name',
-
-    'insured name',
-
-    'borrower name',
-
-    'primary borrower',
-
-    'primary loan borrower',
-
-    'name of primary loan borrower',
-
-    'name of borrower',
-
-    'loan borrower',
-
-    'customer',
-
-    'borrower',
-
-    'member'
-
-],
-
-            'Mobile No': [
-
-                'mobile',
-
-                'mobile no',
-
-                'phone',
-
-                'phone number',
-
-                'contact',
-
-                'contact no'
-
-            ],
-
-            'Age': [
-
-                'age',
-
-                'member age',
-
-                'main member age',
-
-                'customer age'
-
-            ],
-
-            'Gender': [
-
-                'gender',
-
-                'sex'
-
-            ],
-
-            'Sum Assured': [
-
-                'sum assured',
-
-                'sum insured',
-
-                'sa',
-
-                'coverage amount',
-
-                'insurance amount'
-
-            ],
-
-            'Loan Amount': [
-
-                'loan amount',
-
-                'sanction amount',
-
-                'disbursed amount'
-
-            ],
-
-            'Loan Outstanding Amount': [
-
-                'loan outstanding',
-
-                'outstanding amount',
-
-                'current balance',
-
-                'balance amount'
-
-            ],
-
-            'Loan Account No': [
-
-                'loan account no',
-
-                'loan account number',
-
-                'loan no',
-
-                'account no',
-
-                'lan no'
-
-            ],
-
-            'DOB': [
-
-                'dob',
-
-                'date of birth',
-
-                'birth date'
-
-            ],
-
-            'Nominee Name': [
-
-                'nominee',
-
-                'nominee name'
-
-            ],
-
-            'Premium': [
-
-                'premium',
-
-                'premium excl gst',
-
-                'base premium'
-
-            ],
-
-            'GST': [
-
-                'gst',
-
-                'tax',
-
-                'gst amount'
-
-            ],
-
-            'Total Premium': [
-
-                'total premium',
-
-                'premium incl gst',
-
-                'gross premium'
-
-            ]
-
-        }
+        all_columns = df.columns.tolist()
 
         # ============================================
-        # DETECT COLUMNS
+        # AUTO DETECTION FUNCTION
         # ============================================
 
-        column_mapping = {}
+        def detect_column(possible_names):
 
-        for standard_col, aliases in COLUMN_ALIASES.items():
+            for col in all_columns:
 
-            for excel_col in df.columns:
+                cleaned_col = str(col).lower().strip()
 
-                excel_col_lower = str(
-                    excel_col
-                ).strip().lower()
+                for keyword in possible_names:
 
-                for alias in aliases:
+                    if keyword in cleaned_col:
 
-                    if alias in excel_col_lower:
+                        return col
 
-                        column_mapping[
-                            standard_col
-                        ] = excel_col
-
-                        break
+            return None
 
         # ============================================
-        # CREATE SAFE COLUMNS
+        # AUTO DETECT COLUMNS
         # ============================================
 
-        for col in COLUMN_ALIASES.keys():
+        detected_name = detect_column([
 
-            if col in column_mapping:
+            'name',
 
-                df[col] = df[
-                    column_mapping[col]
-                ]
+            'borrower',
 
-            else:
+            'member',
 
-                df[col] = ""
+            'customer'
+
+        ])
+
+        detected_sa = detect_column([
+
+            'sum assured',
+
+            'sum insured',
+
+            'sa',
+
+            'coverage'
+
+        ])
+
+        detected_mobile = detect_column([
+
+            'mobile',
+
+            'phone',
+
+            'contact'
+
+        ])
+
+        detected_age = detect_column([
+
+            'age'
+
+        ])
+
+        detected_loan = detect_column([
+
+            'loan account',
+
+            'account no',
+
+            'lan'
+
+        ])
+
+        detected_gender = detect_column([
+
+            'gender',
+
+            'sex'
+
+        ])
 
         # ============================================
-        # SHOW DETECTED COLUMNS
+        # USER COLUMN MAPPING
         # ============================================
 
-        st.subheader("🧠 Detected Columns")
+        st.subheader("🧠 Map Your Columns")
 
-        st.write(column_mapping)
+        name_col = st.selectbox(
+            "Select Name Column",
+            all_columns,
+            index=all_columns.index(detected_name)
+            if detected_name in all_columns
+            else 0
+        )
 
-        # ============================================
-        # CLEAN NUMERIC COLUMNS
-        # ============================================
+        sa_col = st.selectbox(
+            "Select Sum Assured Column",
+            all_columns,
+            index=all_columns.index(detected_sa)
+            if detected_sa in all_columns
+            else 0
+        )
 
-        numeric_cols = [
+        mobile_col = st.selectbox(
+            "Select Mobile Number Column",
+            all_columns,
+            index=all_columns.index(detected_mobile)
+            if detected_mobile in all_columns
+            else 0
+        )
 
-            'Age',
+        age_col = st.selectbox(
+            "Select Age Column",
+            all_columns,
+            index=all_columns.index(detected_age)
+            if detected_age in all_columns
+            else 0
+        )
 
-            'Sum Assured',
+        loan_col = st.selectbox(
+            "Select Loan Account Column",
+            all_columns,
+            index=all_columns.index(detected_loan)
+            if detected_loan in all_columns
+            else 0
+        )
 
-            'Loan Amount',
-
-            'Loan Outstanding Amount',
-
-            'Premium',
-
-            'GST',
-
-            'Total Premium'
-
-        ]
-
-        for col in numeric_cols:
-
-            df[col] = pd.to_numeric(
-
-                df[col],
-
-                errors='coerce'
-
-            ).fillna(0)
-
-        # ============================================
-        # CREATE SIMPLE ML RISK SCORE
-        # ============================================
-
-        df['Risk Score'] = (
-
-            (df['Sum Assured'] / 100000)
-
-            +
-
-            (df['Loan Outstanding Amount'] / 100000)
-
+        gender_col = st.selectbox(
+            "Select Gender Column",
+            all_columns,
+            index=all_columns.index(detected_gender)
+            if detected_gender in all_columns
+            else 0
         )
 
         # ============================================
-        # ML MODEL
+        # STANDARDIZE COLUMNS
         # ============================================
 
-        X = df[[
+        df['Name'] = df[name_col]
 
-            'Sum Assured',
+        df['Sum Assured'] = df[sa_col]
 
-            'Loan Outstanding Amount'
+        df['Mobile No'] = df[mobile_col]
 
-        ]]
+        df['Age'] = df[age_col]
 
-        y = df['Risk Score']
+        df['Loan Account No'] = df[loan_col]
 
-        X_train, X_test, y_train, y_test = train_test_split(
+        df['Gender'] = df[gender_col]
 
-            X,
+        # ============================================
+        # CLEAN NUMERIC DATA
+        # ============================================
 
-            y,
+        df['Sum Assured'] = (
 
-            test_size=0.2,
-
-            random_state=42
+            df['Sum Assured']
+            .astype(str)
+            .str.replace(',', '')
 
         )
 
-        model = RandomForestRegressor(
-            random_state=42
-        )
+        df['Sum Assured'] = pd.to_numeric(
 
-        model.fit(
-            X_train,
-            y_train
-        )
+            df['Sum Assured'],
 
-        # ============================================
-        # PREDICT RISK
-        # ============================================
+            errors='coerce'
 
-        df['Predicted Risk'] = model.predict(X)
+        ).fillna(0)
+
+        df['Age'] = pd.to_numeric(
+
+            df['Age'],
+
+            errors='coerce'
+
+        ).fillna(0)
 
         # ============================================
         # PREMIUM CALCULATION
@@ -506,23 +367,15 @@ if uploaded_file is not None:
 
             (df['Sum Assured'] / 100000)
 
-            *
-
-            RATE_PER_LAKH
+            * RATE_PER_LAKH
 
         )
-
-        # ============================================
-        # GST CALCULATION
-        # ============================================
 
         df['GST Amount'] = (
 
             df['Premium Excl GST']
 
-            *
-
-            GST_RATE
+            * GST_RATE
 
         )
 
@@ -530,21 +383,19 @@ if uploaded_file is not None:
 
             df['Premium Excl GST']
 
-            +
-
-            df['GST Amount']
+            + df['GST Amount']
 
         )
 
         # ============================================
-        # VALIDATION FLAGS
+        # VALIDATION
         # ============================================
 
         df['Validation Status'] = np.where(
 
             df['Sum Assured'] <= 0,
 
-            '❌ Invalid Sum Assured',
+            '❌ Invalid SA',
 
             '✅ Valid'
 
@@ -566,21 +417,13 @@ if uploaded_file is not None:
 
             'Gender',
 
-            'DOB',
-
             'Sum Assured',
-
-            'Loan Amount',
-
-            'Loan Outstanding Amount',
 
             'Premium Excl GST',
 
             'GST Amount',
 
             'Premium + GST',
-
-            'Predicted Risk',
 
             'Validation Status'
 
@@ -633,6 +476,7 @@ if uploaded_file is not None:
         if search:
 
             final_df = final_df[
+
                 final_df['Name']
                 .astype(str)
                 .str.contains(
@@ -640,6 +484,7 @@ if uploaded_file is not None:
                     case=False,
                     na=False
                 )
+
             ]
 
         # ============================================
@@ -654,7 +499,7 @@ if uploaded_file is not None:
         )
 
         # ============================================
-        # DOWNLOAD BUTTON
+        # DOWNLOAD OUTPUT
         # ============================================
 
         output_file = "Premium_Output.xlsx"
@@ -684,5 +529,5 @@ if uploaded_file is not None:
 st.markdown("---")
 
 st.caption(
-    "Built for Group Term Life Insurance Premium Processing"
+    "Built for Group Insurance & Member-to-Trust Processing"
 )
