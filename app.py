@@ -173,12 +173,27 @@ if uploaded_file is not None:
 
         df = pd.read_excel(uploaded_file)
 
-        df = df.copy()
+        # ============================================
+# REMOVE COMPLETELY EMPTY ROWS
+# ============================================
 
-        df.columns = df.columns.str.strip()
+df.dropna(
+    how='all',
+    inplace=True
+)
 
-        # REMOVE EMPTY COLUMNS
-        df = df.loc[:, ~df.columns.isna()]
+# REMOVE ROWS WHERE ALL VALUES ARE EMPTY STRINGS
+
+df = df[
+    ~(
+        df.astype(str)
+        .apply(
+            lambda x: x.str.strip()
+        )
+        .eq('')
+        .all(axis=1)
+    )
+]
 
         # ============================================
         # SHOW RAW DATA
