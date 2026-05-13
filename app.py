@@ -35,35 +35,51 @@ st.markdown("""
     padding-top: 2rem;
 }
 
+/* HEADINGS */
+
 h1 {
-    color: #1e3a5f;
-    font-weight: 700;
+    color: #0F172A !important;
+    font-weight: 800;
 }
 
 h2, h3 {
-    color: #274c77;
+    color: #1E293B !important;
 }
+
+/* NORMAL TEXT */
+
+p, label, div {
+    color: #334155;
+}
+
+/* METRIC CARDS */
 
 [data-testid="metric-container"] {
     background: white;
     border-radius: 15px;
     padding: 20px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    border: 1px solid #dbeafe;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
+
+/* DATAFRAME */
 
 .stDataFrame {
     background-color: white;
     border-radius: 12px;
 }
 
+/* BUTTON */
+
 div.stDownloadButton > button {
-    background-color: #1e40af;
+    background-color: #2563EB;
     color: white;
     border-radius: 10px;
     border: none;
     padding: 10px 20px;
 }
+
+/* HEADER BOX */
 
 .upload-box {
     background: linear-gradient(
@@ -71,10 +87,38 @@ div.stDownloadButton > button {
         #dbeafe,
         #eff6ff
     );
-    padding: 20px;
-    border-radius: 15px;
+
+    padding: 25px;
+
+    border-radius: 20px;
+
     border: 1px solid #bfdbfe;
+
     margin-bottom: 20px;
+}
+
+/* HEADER TEXT */
+
+.upload-box h1 {
+    color: #0F172A !important;
+}
+
+.upload-box p {
+    color: #334155 !important;
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+/* CHECKMARK TEXT */
+
+.upload-box ul li {
+    color: #1E293B !important;
+}
+
+/* SIDEBAR */
+
+section[data-testid="stSidebar"] {
+    background-color: #EFF6FF;
 }
 
 </style>
