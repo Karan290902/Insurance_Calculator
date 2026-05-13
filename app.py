@@ -192,129 +192,217 @@ if uploaded_file is not None:
 
             st.dataframe(df.head())
 
-        # ============================================
-        # DYNAMIC COLUMN DETECTION
-        # ============================================
+# ============================================
+# COLUMN ALIAS MAPPING
+# ============================================
 
-        column_mapping = {}
+COLUMN_ALIASES = {
 
-        for col in df.columns:
+    'Name': [
 
-            lower_col = str(col).strip().lower()
+        'name',
 
-            # ============================================
-            # NAME
-            # ============================================
+        'customer name',
 
-            if (
+        'member name',
 
-                'customer name' in lower_col
+        'insured name',
 
-                or 'member name' in lower_col
+        'borrower name',
 
-                or 'borrower name' in lower_col
+        'primary borrower',
 
-                or 'insured name' in lower_col
+        'name of primary loan borrower',
 
-                or lower_col == 'name'
+        'employee name'
 
-            ):
+    ],
 
-                column_mapping['Name'] = col
+    'Mobile No': [
 
-            # ============================================
-            # MOBILE
-            # ============================================
+        'mobile',
 
-            elif (
+        'mobile no',
 
-                'mobile' in lower_col
+        'phone',
 
-                or 'phone' in lower_col
+        'phone number',
 
-                or 'contact' in lower_col
+        'contact',
 
-            ):
+        'contact no'
 
-                column_mapping['Mobile No'] = col
+    ],
 
-            # ============================================
-            # AGE
-            # ============================================
+    'Age': [
 
-            elif (
+        'age',
 
-                lower_col == 'age'
+        'member age',
 
-                or 'member age' in lower_col
+        'main member age',
 
-                or 'main member age' in lower_col
+        'customer age'
 
-                or 'customer age' in lower_col
+    ],
 
-            ):
+    'Gender': [
 
-                column_mapping['Age'] = col
+        'gender',
 
-            # ============================================
-            # SUM ASSURED
-            # ============================================
+        'sex'
 
-            elif (
+    ],
 
-                'sum assured' in lower_col
+    'Sum Assured': [
 
-                or 'sum insured' in lower_col
+        'sum assured',
 
-                or lower_col == 'sa'
+        'sum insured',
 
-            ):
+        'sa',
 
-                column_mapping['Sum Assured'] = col
+        'coverage amount',
 
-            # ============================================
-            # LOAN ACCOUNT NUMBER
-            # ============================================
+        'insurance amount'
 
-            elif (
+    ],
 
-                'loan account' in lower_col
+    'Loan Amount': [
 
-                or 'account no' in lower_col
+        'loan amount',
 
-                or 'loan no' in lower_col
+        'sanction amount',
 
-            ):
+        'disbursed amount'
 
-                column_mapping['Loan Account No'] = col
+    ],
 
-            # ============================================
-            # LOAN OUTSTANDING
-            # ============================================
+    'Loan Outstanding Amount': [
 
-            elif (
+        'loan outstanding',
 
-                'loan outstanding' in lower_col
+        'outstanding amount',
 
-                or 'outstanding amount' in lower_col
+        'current balance',
 
-            ):
+        'balance amount'
 
-                column_mapping['Loan Outstanding Amount'] = col
+    ],
 
-            # ============================================
-            # GENDER
-            # ============================================
+    'Loan Account No': [
 
-            elif (
+        'loan account no',
 
-                'gender' in lower_col
+        'loan account number',
 
-                or 'sex' in lower_col
+        'loan no',
 
-            ):
+        'account no',
 
-                column_mapping['Gender'] = col
+        'lan no'
+
+    ],
+
+    'DOB': [
+
+        'dob',
+
+        'date of birth',
+
+        'birth date'
+
+    ],
+
+    'Nominee Name': [
+
+        'nominee',
+
+        'nominee name'
+
+    ],
+
+    'Premium': [
+
+        'premium',
+
+        'premium excl gst',
+
+        'base premium'
+
+    ],
+
+    'GST': [
+
+        'gst',
+
+        'tax',
+
+        'gst amount'
+
+    ],
+
+    'Total Premium': [
+
+        'total premium',
+
+        'premium incl gst',
+
+        'gross premium'
+
+    ]
+
+}
+
+# ============================================
+# DETECT COLUMNS
+# ============================================
+
+column_mapping = {}
+
+for standard_col, aliases in COLUMN_ALIASES.items():
+
+    for excel_col in df.columns:
+
+        excel_col_lower = str(
+            excel_col
+        ).strip().lower()
+
+        for alias in aliases:
+
+            if alias in excel_col_lower:
+
+                column_mapping[
+                    standard_col
+                ] = excel_col
+
+                break
+
+# ============================================
+# CREATE SAFE COLUMNS
+# ============================================
+
+for col in COLUMN_ALIASES.keys():
+
+    if col in column_mapping:
+
+        df[col] = df[
+            column_mapping[col]
+        ]
+
+    else:
+
+        df[col] = ""
+
+# ============================================
+# SHOW DETECTED COLUMNS
+# ============================================
+
+st.subheader("🧠 Detected Columns")
+
+st.write(column_mapping)
+
+        
 
         # ============================================
         # SHOW DETECTED COLUMNS
