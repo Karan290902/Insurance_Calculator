@@ -32,6 +32,8 @@ st.markdown("""
     padding-top: 2rem;
 }
 
+/* HEADINGS */
+
 h1 {
     color: #0F172A !important;
     font-weight: 800;
@@ -41,9 +43,13 @@ h2, h3 {
     color: #1E293B !important;
 }
 
+/* NORMAL TEXT */
+
 p, label, div {
     color: #334155;
 }
+
+/* METRIC CARDS */
 
 [data-testid="metric-container"] {
     background: white;
@@ -53,10 +59,14 @@ p, label, div {
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+/* DATAFRAME */
+
 .stDataFrame {
     background-color: white;
     border-radius: 12px;
 }
+
+/* BUTTON */
 
 div.stDownloadButton > button {
     background-color: #2563EB;
@@ -66,7 +76,10 @@ div.stDownloadButton > button {
     padding: 10px 20px;
 }
 
+/* HEADER BOX */
+
 .upload-box {
+
     background: linear-gradient(
         135deg,
         #dbeafe,
@@ -92,6 +105,8 @@ div.stDownloadButton > button {
     line-height: 1.7;
 }
 
+/* SIDEBAR */
+
 section[data-testid="stSidebar"] {
     background-color: #EFF6FF;
 }
@@ -112,7 +127,7 @@ st.markdown("""
 
 <p>
 
-Upload any insurance/member Excel file and calculate:
+Upload any insurance Excel file and calculate:
 
 <br><br>
 
@@ -121,8 +136,6 @@ Upload any insurance/member Excel file and calculate:
 ✅ GST Amount  
 <br>
 ✅ Total Premium  
-<br>
-✅ Portfolio Summary  
 
 </p>
 
@@ -135,7 +148,6 @@ Upload any insurance/member Excel file and calculate:
 # ============================================
 
 RATE_PER_LAKH = 320.3
-
 GST_RATE = 0.18
 
 # ============================================
@@ -156,15 +168,20 @@ if uploaded_file is not None:
     try:
 
         # ============================================
-        # READ EXCEL
+        # READ FILE
         # ============================================
 
         df = pd.read_excel(uploaded_file)
 
+        df = df.copy()
+
         df.columns = df.columns.str.strip()
 
+        # REMOVE EMPTY COLUMNS
+        df = df.loc[:, ~df.columns.isna()]
+
         # ============================================
-        # SHOW DATA
+        # SHOW RAW DATA
         # ============================================
 
         with st.expander("📄 View Uploaded Data"):
@@ -172,17 +189,13 @@ if uploaded_file is not None:
             st.dataframe(df.head())
 
         # ============================================
-        # SHOW COLUMNS
+        # AVAILABLE COLUMNS
         # ============================================
-
-        st.subheader("📋 Uploaded Columns")
-
-        st.write(df.columns.tolist())
 
         all_columns = df.columns.tolist()
 
         # ============================================
-        # AUTO DETECTION FUNCTION
+        # AUTO DETECT FUNCTION
         # ============================================
 
         def detect_column(possible_names):
@@ -197,20 +210,29 @@ if uploaded_file is not None:
 
                         return col
 
-            return None
+            return all_columns[0]
 
         # ============================================
-        # AUTO DETECT COLUMNS
+        # SAFE INDEX FUNCTION
+        # ============================================
+
+        def safe_index(value, columns):
+
+            if value in columns:
+
+                return columns.index(value)
+
+            return 0
+
+        # ============================================
+        # AUTO DETECT IMPORTANT FIELDS
         # ============================================
 
         detected_name = detect_column([
 
             'name',
-
             'borrower',
-
             'member',
-
             'customer'
 
         ])
@@ -218,118 +240,87 @@ if uploaded_file is not None:
         detected_sa = detect_column([
 
             'sum assured',
-
             'sum insured',
-
             'sa',
-
             'coverage'
-
-        ])
-
-        detected_mobile = detect_column([
-
-            'mobile',
-
-            'phone',
-
-            'contact'
-
-        ])
-
-        detected_age = detect_column([
-
-            'age'
 
         ])
 
         detected_loan = detect_column([
 
             'loan account',
-
             'account no',
-
             'lan'
 
         ])
 
-        detected_gender = detect_column([
+        detected_mobile = detect_column([
 
-            'gender',
-
-            'sex'
+            'mobile',
+            'phone',
+            'contact'
 
         ])
 
         # ============================================
-        # USER COLUMN MAPPING
+        # SIMPLE COLUMN MAPPING
         # ============================================
 
-        st.subheader("🧠 Map Your Columns")
+        st.subheader("🧠 Map Required Fields")
 
-        name_col = st.selectbox(
-            "Select Name Column",
-            all_columns,
-            index=all_columns.index(detected_name)
-            if detected_name in all_columns
-            else 0
-        )
+        col1, col2 = st.columns(2)
 
-        sa_col = st.selectbox(
-            "Select Sum Assured Column",
-            all_columns,
-            index=all_columns.index(detected_sa)
-            if detected_sa in all_columns
-            else 0
-        )
+        with col1:
 
-        mobile_col = st.selectbox(
-            "Select Mobile Number Column",
-            all_columns,
-            index=all_columns.index(detected_mobile)
-            if detected_mobile in all_columns
-            else 0
-        )
+            name_col = st.selectbox(
+                "👤 Customer Name",
+                all_columns,
+                index=safe_index(
+                    detected_name,
+                    all_columns
+                )
+            )
 
-        age_col = st.selectbox(
-            "Select Age Column",
-            all_columns,
-            index=all_columns.index(detected_age)
-            if detected_age in all_columns
-            else 0
-        )
+            sa_col = st.selectbox(
+                "💰 Sum Assured",
+                all_columns,
+                index=safe_index(
+                    detected_sa,
+                    all_columns
+                )
+            )
 
-        loan_col = st.selectbox(
-            "Select Loan Account Column",
-            all_columns,
-            index=all_columns.index(detected_loan)
-            if detected_loan in all_columns
-            else 0
-        )
+        with col2:
 
-        gender_col = st.selectbox(
-            "Select Gender Column",
-            all_columns,
-            index=all_columns.index(detected_gender)
-            if detected_gender in all_columns
-            else 0
-        )
+            loan_col = st.selectbox(
+                "🏦 Loan Account No",
+                all_columns,
+                index=safe_index(
+                    detected_loan,
+                    all_columns
+                )
+            )
+
+            mobile_col = st.selectbox(
+                "📱 Mobile Number",
+                all_columns,
+                index=safe_index(
+                    detected_mobile,
+                    all_columns
+                )
+            )
 
         # ============================================
-        # STANDARDIZE COLUMNS
+        # STANDARDIZE IMPORTANT COLUMNS
         # ============================================
 
         df['Name'] = df[name_col]
 
         df['Sum Assured'] = df[sa_col]
 
-        df['Mobile No'] = df[mobile_col]
-
-        df['Age'] = df[age_col]
-
         df['Loan Account No'] = df[loan_col]
 
-        df['Gender'] = df[gender_col]
+        df['Mobile No'] = df[mobile_col]
 
         # ============================================
         # CLEAN NUMERIC DATA
@@ -340,20 +331,13 @@ if uploaded_file is not None:
             df['Sum Assured']
             .astype(str)
             .str.replace(',', '')
+            .str.replace('₹', '')
 
         )
 
         df['Sum Assured'] = pd.to_numeric(
 
             df['Sum Assured'],
-
-            errors='coerce'
-
-        ).fillna(0)
-
-        df['Age'] = pd.to_numeric(
-
-            df['Age'],
 
             errors='coerce'
 
@@ -371,6 +355,10 @@ if uploaded_file is not None:
 
         )
 
+        # ============================================
+        # GST CALCULATION
+        # ============================================
+
         df['GST Amount'] = (
 
             df['Premium Excl GST']
@@ -378,6 +366,10 @@ if uploaded_file is not None:
             * GST_RATE
 
         )
+
+        # ============================================
+        # TOTAL PREMIUM
+        # ============================================
 
         df['Premium + GST'] = (
 
@@ -412,10 +404,6 @@ if uploaded_file is not None:
             'Name',
 
             'Mobile No',
-
-            'Age',
-
-            'Gender',
 
             'Sum Assured',
 
