@@ -32,8 +32,6 @@ st.markdown("""
     padding-top: 2rem;
 }
 
-/* HEADINGS */
-
 h1 {
     color: #0F172A !important;
     font-weight: 800;
@@ -43,13 +41,9 @@ h2, h3 {
     color: #1E293B !important;
 }
 
-/* NORMAL TEXT */
-
 p, label, div {
     color: #334155;
 }
-
-/* METRIC CARDS */
 
 [data-testid="metric-container"] {
     background: white;
@@ -59,14 +53,10 @@ p, label, div {
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-/* DATAFRAME */
-
 .stDataFrame {
     background-color: white;
     border-radius: 12px;
 }
-
-/* BUTTON */
 
 div.stDownloadButton > button {
     background-color: #2563EB;
@@ -75,8 +65,6 @@ div.stDownloadButton > button {
     border: none;
     padding: 10px 20px;
 }
-
-/* HEADER BOX */
 
 .upload-box {
 
@@ -105,8 +93,6 @@ div.stDownloadButton > button {
     line-height: 1.7;
 }
 
-/* SIDEBAR */
-
 section[data-testid="stSidebar"] {
     background-color: #EFF6FF;
 }
@@ -127,7 +113,7 @@ st.markdown("""
 
 <p>
 
-Upload any insurance Excel file and calculate:
+Upload any insurance/member Excel file and calculate:
 
 <br><br>
 
@@ -173,27 +159,41 @@ if uploaded_file is not None:
 
         df = pd.read_excel(uploaded_file)
 
+        df = df.copy()
+
         # ============================================
-# REMOVE COMPLETELY EMPTY ROWS
-# ============================================
+        # REMOVE EMPTY ROWS
+        # ============================================
 
-df.dropna(
-    how='all',
-    inplace=True
-)
-
-# REMOVE ROWS WHERE ALL VALUES ARE EMPTY STRINGS
-
-df = df[
-    ~(
-        df.astype(str)
-        .apply(
-            lambda x: x.str.strip()
+        df.dropna(
+            how='all',
+            inplace=True
         )
-        .eq('')
-        .all(axis=1)
-    )
-]
+
+        # REMOVE EMPTY STRING ROWS
+
+        df = df[
+            ~(
+                df.astype(str)
+                .apply(
+                    lambda x: x.str.strip()
+                )
+                .eq('')
+                .all(axis=1)
+            )
+        ]
+
+        # ============================================
+        # CLEAN COLUMNS
+        # ============================================
+
+        df.columns = df.columns.astype(str)
+
+        df.columns = df.columns.str.strip()
+
+        # REMOVE EMPTY COLUMNS
+
+        df = df.loc[:, ~df.columns.isna()]
 
         # ============================================
         # SHOW RAW DATA
@@ -256,8 +256,9 @@ df = df[
 
             'sum assured',
             'sum insured',
-            'sa',
-            'coverage'
+            'aviva calculation sa',
+            'coverage',
+            'sa'
 
         ])
 
@@ -347,6 +348,7 @@ df = df[
             .astype(str)
             .str.replace(',', '')
             .str.replace('₹', '')
+            .str.strip()
 
         )
 
@@ -357,6 +359,14 @@ df = df[
             errors='coerce'
 
         ).fillna(0)
+
+        # ============================================
+        # KEEP ONLY VALID SA ROWS
+        # ============================================
+
+        df = df[
+            df['Sum Assured'] > 0
+        ]
 
         # ============================================
         # PREMIUM CALCULATION
