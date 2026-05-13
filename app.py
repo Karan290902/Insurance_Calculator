@@ -122,6 +122,8 @@ Upload any insurance/member Excel file and calculate:
 ✅ GST Amount  
 <br>
 ✅ Total Premium  
+<br>
+✅ Total GST Summary  
 
 </p>
 
@@ -170,8 +172,6 @@ if uploaded_file is not None:
             inplace=True
         )
 
-        # REMOVE EMPTY STRING ROWS
-
         df = df[
             ~(
                 df.astype(str)
@@ -190,8 +190,6 @@ if uploaded_file is not None:
         df.columns = df.columns.astype(str)
 
         df.columns = df.columns.str.strip()
-
-        # REMOVE EMPTY COLUMNS
 
         df = df.loc[:, ~df.columns.isna()]
 
@@ -443,39 +441,60 @@ if uploaded_file is not None:
         ]]
 
         # ============================================
+        # TOTAL CALCULATIONS
+        # ============================================
+
+        total_members = len(final_df)
+
+        total_sa = final_df['Sum Assured'].sum()
+
+        total_premium_excl = final_df['Premium Excl GST'].sum()
+
+        total_gst = final_df['GST Amount'].sum()
+
+        total_premium_incl = final_df['Premium + GST'].sum()
+
+        # ============================================
         # DASHBOARD
         # ============================================
 
         st.subheader("📊 Portfolio Summary")
 
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
 
         with col1:
 
             st.metric(
                 "Total Members",
-                len(final_df)
+                total_members
             )
 
         with col2:
 
             st.metric(
                 "Total Sum Assured",
-                f"₹ {final_df['Sum Assured'].sum():,.0f}"
+                f"₹ {total_sa:,.0f}"
             )
 
         with col3:
 
             st.metric(
                 "Premium Excl GST",
-                f"₹ {final_df['Premium Excl GST'].sum():,.2f}"
+                f"₹ {total_premium_excl:,.2f}"
             )
 
         with col4:
 
             st.metric(
+                "Total GST",
+                f"₹ {total_gst:,.2f}"
+            )
+
+        with col5:
+
+            st.metric(
                 "Premium Incl GST",
-                f"₹ {final_df['Premium + GST'].sum():,.2f}"
+                f"₹ {total_premium_incl:,.2f}"
             )
 
         # ============================================
