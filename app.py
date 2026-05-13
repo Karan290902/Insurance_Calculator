@@ -199,23 +199,33 @@ if uploaded_file is not None:
 
             'Name': [
 
-                'name',
+    'name',
 
-                'customer name',
+    'customer name',
 
-                'member name',
+    'member name',
 
-                'insured name',
+    'insured name',
 
-                'borrower name',
+    'borrower name',
 
-                'primary borrower',
+    'primary borrower',
 
-                'name of primary loan borrower',
+    'primary loan borrower',
 
-                'employee name'
+    'name of primary loan borrower',
 
-            ],
+    'name of borrower',
+
+    'loan borrower',
+
+    'customer',
+
+    'borrower',
+
+    'member'
+
+],
 
             'Mobile No': [
 
