@@ -109,12 +109,6 @@ div.stDownloadButton > button {
     line-height: 1.7;
 }
 
-/* CHECKMARK TEXT */
-
-.upload-box ul li {
-    color: #1E293B !important;
-}
-
 /* SIDEBAR */
 
 section[data-testid="stSidebar"] {
@@ -135,13 +129,18 @@ st.markdown("""
 
 <h1>💰 Group Term Life Insurance Premium Calculator</h1>
 
-<p style="font-size:18px; color:#475569;">
+<p>
 
 Upload insurance Excel files and automatically calculate:
 
+<br><br>
+
 ✅ Premium  
+<br>
 ✅ GST  
+<br>
 ✅ Total Premium  
+<br>
 ✅ ML Risk Prediction  
 
 </p>
@@ -192,217 +191,207 @@ if uploaded_file is not None:
 
             st.dataframe(df.head())
 
-# ============================================
-# COLUMN ALIAS MAPPING
-# ============================================
+        # ============================================
+        # COLUMN ALIAS MAPPING
+        # ============================================
 
-COLUMN_ALIASES = {
+        COLUMN_ALIASES = {
 
-    'Name': [
+            'Name': [
 
-        'name',
+                'name',
 
-        'customer name',
+                'customer name',
 
-        'member name',
+                'member name',
 
-        'insured name',
+                'insured name',
 
-        'borrower name',
+                'borrower name',
 
-        'primary borrower',
+                'primary borrower',
 
-        'name of primary loan borrower',
+                'name of primary loan borrower',
 
-        'employee name'
+                'employee name'
 
-    ],
+            ],
 
-    'Mobile No': [
+            'Mobile No': [
 
-        'mobile',
+                'mobile',
 
-        'mobile no',
+                'mobile no',
 
-        'phone',
+                'phone',
 
-        'phone number',
+                'phone number',
 
-        'contact',
+                'contact',
 
-        'contact no'
+                'contact no'
 
-    ],
+            ],
 
-    'Age': [
+            'Age': [
 
-        'age',
+                'age',
 
-        'member age',
+                'member age',
 
-        'main member age',
+                'main member age',
 
-        'customer age'
+                'customer age'
 
-    ],
+            ],
 
-    'Gender': [
+            'Gender': [
 
-        'gender',
+                'gender',
 
-        'sex'
+                'sex'
 
-    ],
+            ],
 
-    'Sum Assured': [
+            'Sum Assured': [
 
-        'sum assured',
+                'sum assured',
 
-        'sum insured',
+                'sum insured',
 
-        'sa',
+                'sa',
 
-        'coverage amount',
+                'coverage amount',
 
-        'insurance amount'
+                'insurance amount'
 
-    ],
+            ],
 
-    'Loan Amount': [
+            'Loan Amount': [
 
-        'loan amount',
+                'loan amount',
 
-        'sanction amount',
+                'sanction amount',
 
-        'disbursed amount'
+                'disbursed amount'
 
-    ],
+            ],
 
-    'Loan Outstanding Amount': [
+            'Loan Outstanding Amount': [
 
-        'loan outstanding',
+                'loan outstanding',
 
-        'outstanding amount',
+                'outstanding amount',
 
-        'current balance',
+                'current balance',
 
-        'balance amount'
+                'balance amount'
 
-    ],
+            ],
 
-    'Loan Account No': [
+            'Loan Account No': [
 
-        'loan account no',
+                'loan account no',
 
-        'loan account number',
+                'loan account number',
 
-        'loan no',
+                'loan no',
 
-        'account no',
+                'account no',
 
-        'lan no'
+                'lan no'
 
-    ],
+            ],
 
-    'DOB': [
+            'DOB': [
 
-        'dob',
+                'dob',
 
-        'date of birth',
+                'date of birth',
 
-        'birth date'
+                'birth date'
 
-    ],
+            ],
 
-    'Nominee Name': [
+            'Nominee Name': [
 
-        'nominee',
+                'nominee',
 
-        'nominee name'
+                'nominee name'
 
-    ],
+            ],
 
-    'Premium': [
+            'Premium': [
 
-        'premium',
+                'premium',
 
-        'premium excl gst',
+                'premium excl gst',
 
-        'base premium'
+                'base premium'
 
-    ],
+            ],
 
-    'GST': [
+            'GST': [
 
-        'gst',
+                'gst',
 
-        'tax',
+                'tax',
 
-        'gst amount'
+                'gst amount'
 
-    ],
+            ],
 
-    'Total Premium': [
+            'Total Premium': [
 
-        'total premium',
+                'total premium',
 
-        'premium incl gst',
+                'premium incl gst',
 
-        'gross premium'
+                'gross premium'
 
-    ]
+            ]
 
-}
+        }
 
-# ============================================
-# DETECT COLUMNS
-# ============================================
+        # ============================================
+        # DETECT COLUMNS
+        # ============================================
 
-column_mapping = {}
+        column_mapping = {}
 
-for standard_col, aliases in COLUMN_ALIASES.items():
+        for standard_col, aliases in COLUMN_ALIASES.items():
 
-    for excel_col in df.columns:
+            for excel_col in df.columns:
 
-        excel_col_lower = str(
-            excel_col
-        ).strip().lower()
+                excel_col_lower = str(
+                    excel_col
+                ).strip().lower()
 
-        for alias in aliases:
+                for alias in aliases:
 
-            if alias in excel_col_lower:
+                    if alias in excel_col_lower:
 
-                column_mapping[
-                    standard_col
-                ] = excel_col
+                        column_mapping[
+                            standard_col
+                        ] = excel_col
 
-                break
+                        break
 
-# ============================================
-# CREATE SAFE COLUMNS
-# ============================================
+        # ============================================
+        # CREATE SAFE COLUMNS
+        # ============================================
 
-for col in COLUMN_ALIASES.keys():
+        for col in COLUMN_ALIASES.keys():
 
-    if col in column_mapping:
+            if col in column_mapping:
 
-        df[col] = df[
-            column_mapping[col]
-        ]
+                df[col] = df[
+                    column_mapping[col]
+                ]
 
-    else:
+            else:
 
-        df[col] = ""
-
-# ============================================
-# SHOW DETECTED COLUMNS
-# ============================================
-
-st.subheader("🧠 Detected Columns")
-
-st.write(column_mapping)
-
-        
+                df[col] = ""
 
         # ============================================
         # SHOW DETECTED COLUMNS
@@ -413,50 +402,24 @@ st.write(column_mapping)
         st.write(column_mapping)
 
         # ============================================
-        # CREATE STANDARD COLUMNS
-        # ============================================
-
-        standard_columns = [
-
-            'Name',
-
-            'Mobile No',
-
-            'Age',
-
-            'Sum Assured',
-
-            'Loan Account No',
-
-            'Loan Outstanding Amount',
-
-            'Gender'
-
-        ]
-
-        for std_col in standard_columns:
-
-            if std_col in column_mapping:
-
-                df[std_col] = df[
-                    column_mapping[std_col]
-                ]
-
-            else:
-
-                df[std_col] = ""
-
-        # ============================================
         # CLEAN NUMERIC COLUMNS
         # ============================================
 
         numeric_cols = [
 
+            'Age',
+
             'Sum Assured',
+
+            'Loan Amount',
 
             'Loan Outstanding Amount',
 
-            'Age'
+            'Premium',
+
+            'GST',
+
+            'Total Premium'
 
         ]
 
@@ -564,6 +527,20 @@ st.write(column_mapping)
         )
 
         # ============================================
+        # VALIDATION FLAGS
+        # ============================================
+
+        df['Validation Status'] = np.where(
+
+            df['Sum Assured'] <= 0,
+
+            '❌ Invalid Sum Assured',
+
+            '✅ Valid'
+
+        )
+
+        # ============================================
         # FINAL OUTPUT
         # ============================================
 
@@ -579,7 +556,13 @@ st.write(column_mapping)
 
             'Gender',
 
+            'DOB',
+
             'Sum Assured',
+
+            'Loan Amount',
+
+            'Loan Outstanding Amount',
 
             'Premium Excl GST',
 
@@ -587,7 +570,9 @@ st.write(column_mapping)
 
             'Premium + GST',
 
-            'Predicted Risk'
+            'Predicted Risk',
+
+            'Validation Status'
 
         ]]
 
